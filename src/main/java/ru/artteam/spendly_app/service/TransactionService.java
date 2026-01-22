@@ -8,6 +8,7 @@ import ru.artteam.spendly_app.domain.TransactionEntity;
 import ru.artteam.spendly_app.domain.UserEntity;
 import ru.artteam.spendly_app.domain.enums.TransactionType;
 import ru.artteam.spendly_app.dto.req.TransactionRequestDto;
+import ru.artteam.spendly_app.dto.req.TransactionUpdateDto;
 import ru.artteam.spendly_app.dto.res.TransactionResponseDto;
 import ru.artteam.spendly_app.dto.res.UserBalanceDto;
 import ru.artteam.spendly_app.exceptions.AccessDeniedException;
@@ -84,6 +85,31 @@ public class TransactionService {
             throw new AccessDeniedException("Access denied");
         }
         transactionRepository.delete(transaction);
+    }
+
+    @Transactional
+    public TransactionResponseDto updateTransaction(Long transactionId, Long userId, TransactionUpdateDto dto){
+        TransactionEntity transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(()->new NoSuchElementException("Transaction not found"));
+        if (!userRepository.existsById(userId)){
+            throw new NoSuchElementException("User not found");
+        }
+        if (!transaction.getUser().getId().equals(userId)){
+            throw new RuntimeException("Access denied: transaction");
+        }
+        if (dto.getCategoryId() != null){
+            CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+            if (!category.getUser().getId().equals(userId)){
+                throw new RuntimeException("Access denied: category");
+            }
+            transaction.setCategory(category);
+        }
+        if (dto.getAmount() != null) transaction.setAmount(dto.getAmount());
+        if (dto.getDescription() != null) transaction.setDescription(dto.getDescription());
+        if (dto.getTransactionType() != null) transaction.setTransactionType(dto.getTransactionType());
+
+        return mapToResponseDto(transaction);
     }
 
 

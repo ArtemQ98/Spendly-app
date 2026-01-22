@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.artteam.spendly_app.dto.req.TransactionRequestDto;
+import ru.artteam.spendly_app.dto.req.TransactionUpdateDto;
 import ru.artteam.spendly_app.dto.res.TransactionResponseDto;
 import ru.artteam.spendly_app.dto.res.UserBalanceDto;
 import ru.artteam.spendly_app.service.TransactionService;
@@ -52,6 +53,15 @@ public class TransactionController {
     ){
         transactionService.deleteTransaction(transactionId, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TransactionResponseDto> updateTransaction(
+            @PathVariable("id") Long id,
+            @RequestParam Long userId,
+            @RequestBody TransactionUpdateDto dto
+            ){
+        return ResponseEntity.ok(transactionService.updateTransaction(id,userId,dto));
     }
 
 }

@@ -90,16 +90,16 @@ public class TransactionService {
     @Transactional
     public TransactionResponseDto updateTransaction(Long transactionId, Long userId, TransactionUpdateDto dto){
         TransactionEntity transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(()->new NoSuchElementException("Transaction not found"));
+                .orElseThrow(()->new RuntimeException("Transaction not found"));
         if (!userRepository.existsById(userId)){
-            throw new NoSuchElementException("User not found");
+            throw new RuntimeException("User not found");
         }
         if (!transaction.getUser().getId().equals(userId)){
             throw new RuntimeException("Access denied: transaction");
         }
         if (dto.getCategoryId() != null){
             CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
-                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
             if (!category.getUser().getId().equals(userId)){
                 throw new RuntimeException("Access denied: category");
             }

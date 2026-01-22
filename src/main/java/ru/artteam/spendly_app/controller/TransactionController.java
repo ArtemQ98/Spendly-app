@@ -45,4 +45,13 @@ public class TransactionController {
         return ResponseEntity.ok(userBalance);
     }
 
+    @DeleteMapping("/{transactionId}")
+    public ResponseEntity<Void> deleteTransaction(
+            @PathVariable("transactionId") Long transactionId,
+            @RequestParam Long userId
+    ){
+        transactionService.deleteTransaction(transactionId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

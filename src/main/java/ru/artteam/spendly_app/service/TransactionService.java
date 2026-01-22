@@ -1,8 +1,8 @@
 package ru.artteam.spendly_app.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.artteam.spendly_app.domain.CategoryEntity;
 import ru.artteam.spendly_app.domain.TransactionEntity;
 import ru.artteam.spendly_app.domain.UserEntity;
@@ -16,6 +16,7 @@ import ru.artteam.spendly_app.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +70,21 @@ public class TransactionService {
 
         return new UserBalanceDto(income, expense, balance);
     }
+
+    @Transactional
+    public void deleteTransaction(Long transactionId, Long userId){
+        TransactionEntity transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(()-> new RuntimeException("Transaction not found"));
+        if (!userRepository.existsById(userId)){
+            throw new NoSuchElementException("User not found");
+        }
+
+        if (!transaction.getUser().getId().equals(userId)){
+            throw new RuntimeException("Access denied");
+        }
+        transactionRepository.delete(transaction);
+    }
+
 
     private TransactionResponseDto mapToResponseDto(TransactionEntity transaction){
         TransactionResponseDto res = new TransactionResponseDto();

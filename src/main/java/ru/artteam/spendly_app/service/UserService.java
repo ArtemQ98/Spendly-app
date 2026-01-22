@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.artteam.spendly_app.domain.UserEntity;
 import ru.artteam.spendly_app.dto.req.UserRegistrationDto;
 import ru.artteam.spendly_app.dto.res.UserResponseDto;
+import ru.artteam.spendly_app.exceptions.ResourceNotFoundException;
 import ru.artteam.spendly_app.repository.UserRepository;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class UserService {
     @Transactional
     public UserEntity createUser(UserRegistrationDto dto){
         if (userRepository.existsByEmail(dto.getEmail())){
-            throw new RuntimeException("A user with such an email already exists");
+            throw new ResourceNotFoundException("A user with such an email already exists");
         }
 
         UserEntity user = new UserEntity();

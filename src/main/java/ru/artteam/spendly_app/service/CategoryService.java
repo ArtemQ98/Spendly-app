@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.artteam.spendly_app.domain.CategoryEntity;
 import ru.artteam.spendly_app.domain.UserEntity;
 import ru.artteam.spendly_app.dto.res.CategoryResponseDto;
+import ru.artteam.spendly_app.exceptions.ResourceNotFoundException;
 import ru.artteam.spendly_app.repository.CategoryRepository;
 import ru.artteam.spendly_app.repository.UserRepository;
 
@@ -21,7 +22,7 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public List<CategoryResponseDto> getAllCategoryByUserId(Long userId){
         if (!userRepository.existsById(userId)){
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         return categoryRepository.findAllByUserId(userId).stream().map(this::mapToResponseDto).toList();
     }
@@ -29,9 +30,9 @@ public class CategoryService {
     @Transactional
     public CategoryResponseDto createCategory(String name, Long userId){
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(()-> new RuntimeException("User not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
         if (categoryRepository.existsByNameAndUserId(name, userId)){
-            throw new RuntimeException("Category already exists for this user");
+            throw new ResourceNotFoundException("Category already exists for this user");
         }
         CategoryEntity category = new CategoryEntity();
         category.setName(name);

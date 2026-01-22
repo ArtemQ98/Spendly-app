@@ -10,13 +10,14 @@ import ru.artteam.spendly_app.domain.enums.TransactionType;
 import ru.artteam.spendly_app.dto.req.TransactionRequestDto;
 import ru.artteam.spendly_app.dto.res.TransactionResponseDto;
 import ru.artteam.spendly_app.dto.res.UserBalanceDto;
+import ru.artteam.spendly_app.exceptions.AccessDeniedException;
+import ru.artteam.spendly_app.exceptions.ResourceNotFoundException;
 import ru.artteam.spendly_app.repository.CategoryRepository;
 import ru.artteam.spendly_app.repository.TransactionRepository;
 import ru.artteam.spendly_app.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +30,9 @@ public class TransactionService {
     @Transactional
     public TransactionResponseDto createTransaction(TransactionRequestDto dto){
         UserEntity user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         TransactionEntity transaction = new TransactionEntity();
         transaction.setAmount(dto.getAmount());
@@ -46,7 +47,7 @@ public class TransactionService {
 
     public List<TransactionResponseDto> getTransactionByUserId(Long userId){
         if (!userRepository.existsById(userId)){
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         return transactionRepository.findAllByUserId(userId)
                 .stream()
@@ -57,7 +58,7 @@ public class TransactionService {
     @Transactional
     public UserBalanceDto getUserBalanceDto(Long userId){
         if (!userRepository.existsById(userId)){
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
 
         BigDecimal income = transactionRepository.sumAmountByUserIdAndType(userId, TransactionType.INCOME);
@@ -74,13 +75,13 @@ public class TransactionService {
     @Transactional
     public void deleteTransaction(Long transactionId, Long userId){
         TransactionEntity transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(()-> new RuntimeException("Transaction not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Transaction not found"));
         if (!userRepository.existsById(userId)){
-            throw new NoSuchElementException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
 
         if (!transaction.getUser().getId().equals(userId)){
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
         transactionRepository.delete(transaction);
     }
